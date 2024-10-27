@@ -36,26 +36,14 @@ def attack(message: Message):
     bot.reply_to(message, owner_pokemon.attack(enemy_pokemon))
     
 
-recharges = {}
-
-@bot.message_handler(commands=['rest'])
-def rest(message: Message):
+@bot.message_handler(commands=['feed'])
+def feed(message: Message):
     owner_pokemon = Pokemon.pokemons.get(message.from_user.username, None)
-    if owner_pokemon.hp == owner_pokemon.max_hp:
-        bot.reply_to(message, f"Ваш покемон полностью здоров!")
-        return
-    recharge_time = recharges.get(owner_pokemon, 0)
-    current_time = time()
-    if recharge_time > current_time:
-        bot.reply_to(message, f"Подождите ещё {recharge_time - current_time:.2f} секунд!")
-        return
     if owner_pokemon is None:
         bot.reply_to(message, "У вас нет покемона!")
         return
-    owner_pokemon.hp = owner_pokemon.max_hp
-    recharges[owner_pokemon] = current_time + 30.0
-    bot.reply_to(message, "Жизни вашего покемона были восстановлены!")
-
+    bot.send_message(message.chat.id, owner_pokemon.feed())
+    
 
 @bot.message_handler(commands=['info'])
 def info(message: Message):

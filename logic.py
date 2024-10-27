@@ -1,5 +1,6 @@
 from random import randint, random
 import requests
+import datetime
 
 
 class Pokemon:
@@ -14,6 +15,7 @@ class Pokemon:
         self.max_hp = randint(50, 100)
         self.hp = self.max_hp
         self.power = randint(2, 10)
+        self.last_feed_time = datetime.datetime.min
 
         self.img = self.get_img()
         self.name = self.get_name()
@@ -63,6 +65,21 @@ class Pokemon:
         
         return f"Сражение @{self.pokemon_trainer} с @{other.pokemon_trainer}! (осталось: {other.hp}/{other.max_hp})"
 
+
+    def feed(self, feed_interval: int = 20, hp_gain: int = 10) -> str:
+        current_time = datetime.datetime.now()
+        delta_time = datetime.timedelta(seconds=feed_interval)
+        if self.hp == self.max_hp:
+            return "Ваш покемон уже полностью здоров!"
+        if (current_time - self.last_feed_time) > delta_time: # магический код; вычисляет разницу между текущим и временем последней кормёжки, и проверяет, больше ли она feed_interval секунд
+            self.hp = min(self.max_hp, self.hp + hp_gain)
+            self.last_feed_time = current_time
+            return f"Здоровье покемона увеличено. Текущее здоровье: {self.hp}/{self.max_hp}"
+        else:
+            return f"Следующее время кормления: {self.last_feed_time + delta_time}"
+
+
+
     # Метод класса для получения карт   инки покемона
     def show_img(self) -> str:
         # ???
@@ -77,6 +94,9 @@ class Wizard(Pokemon):
 
     def info(self):
         return super().info() + "\nВаш покемон - волшебник."
+    
+    def feed(self) -> str:
+        return super().feed(feed_interval=10)
 
 class Fighter(Pokemon):
     def __init__(self, pokemon_trainer):
@@ -93,4 +113,6 @@ class Fighter(Pokemon):
     def info(self):
         return super().info() + "\nВаш покемон - боец."
 
+    def feed(self) -> str:
+        return super().feed(hp_gain=20)
 
