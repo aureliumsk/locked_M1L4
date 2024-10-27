@@ -57,6 +57,14 @@ def rest(message: Message):
     bot.reply_to(message, "Жизни вашего покемона были восстановлены!")
 
 
+@bot.message_handler(commands=['info'])
+def info(message: Message):
+    owner_pokemon = Pokemon.pokemons.get(message.from_user.username, None)
+    if owner_pokemon is None:
+        bot.reply_to(message, "У вас нет покемона!")
+        return
+    bot.send_message(message.chat.id, owner_pokemon.info())
+
 @bot.message_handler(commands=['start'])
 def start(message):
     bot.send_message(message.chat.id, "Привет! Я бот для игры в покемонов, скорее попробуй создать себе покемона, нажимай - /go")
