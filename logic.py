@@ -73,6 +73,7 @@ class Wizard(Pokemon):
     def __init__(self, pokemon_trainer):
         super().__init__(pokemon_trainer)
         self.max_hp += randint(0, 50)
+        self.hp = self.max_hp
 
     def info(self):
         return super().info() + "\nВаш покемон - волшебник."

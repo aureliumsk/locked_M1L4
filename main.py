@@ -4,13 +4,14 @@ from config import token
 
 from random import choices
 from logic import Pokemon, Wizard, Fighter
+from time import time
 
-bot = telebot.TeleBot(token) 
+bot = telebot.TeleBot(token, threaded=False) 
 
 @bot.message_handler(commands=['go'])
 def go(message: Message):
     if message.from_user.username not in Pokemon.pokemons.keys():
-        type = choices((Pokemon, Wizard, Fighter), weights=(2, 1, 1))[0]
+        type = choices((Pokemon, Wizard, Fighter), weights=(4.0, 1.0, 1.0))[0]
 
         pokemon = type(message.from_user.username)
         
@@ -35,11 +36,31 @@ def attack(message: Message):
     bot.reply_to(message, owner_pokemon.attack(enemy_pokemon))
     
 
+recharges = {}
+
+@bot.message_handler(commands=['rest'])
+def rest(message: Message):
+    owner_pokemon = Pokemon.pokemons.get(message.from_user.username, None)
+    if owner_pokemon.hp == owner_pokemon.max_hp:
+        bot.reply_to(message, f"Ваш покемон полностью здоров!")
+        return
+    recharge_time = recharges.get(owner_pokemon, 0)
+    current_time = time()
+    if recharge_time > current_time:
+        bot.reply_to(message, f"Подождите ещё {recharge_time - current_time:.2f} секунд!")
+        return
+    if owner_pokemon is None:
+        bot.reply_to(message, "У вас нет покемона!")
+        return
+    owner_pokemon.hp = owner_pokemon.max_hp
+    recharges[owner_pokemon] = current_time + 30.0
+    bot.reply_to(message, "Жизни вашего покемона были восстановлены!")
+
 
 @bot.message_handler(commands=['start'])
 def start(message):
     bot.send_message(message.chat.id, "Привет! Я бот для игры в покемонов, скорее попробуй создать себе покемона, нажимай - /go")
 
 
-bot.infinity_polling(none_stop=True)
+bot.infinity_polling()
 
